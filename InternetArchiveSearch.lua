@@ -1,8 +1,11 @@
 -- About InternetArchiveSearch.lua
 --
--- Developed by Simmons College Library
+-- Developed by Atlas Systems and Simmons College Library
+
+-- Version 2.0.0, March 2021, Atlas Systems, Inc.
+-- * Converted addon to use Chromium-based browsers
 --
--- Version 1.1, April 2010
+-- Version 1.1, April 2010, Simmons College Library
 --
 -- InternetArchiveSearch.lua does search of Internet Archive for the LoanTitle for loans.
 -- autoSearch (boolean) determines whether the search is performed automatically when a request is opened or not.
@@ -12,20 +15,35 @@
 local autoSearch = GetSetting("AutoSearch");
 
 local interfaceMngr = nil;
-local browser = nil;
+local addonForm = {};
 
 function Init()
 	if GetFieldValue("Transaction", "RequestType") == "Loan" then
+
+interfaceMngr = GetInterfaceManager();
+		
 		interfaceMngr = GetInterfaceManager();
 		
-		-- Create browser
-		browser = interfaceMngr:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Script");
+		-- Create a form
+		addonForm.Form = interfaceMngr:CreateForm("Internet Archive Search", "Internet Archive Search");
 		
-		-- Create buttons
-		browser:CreateButton("Search", GetClientImage("Search32"), "Search", "Internet Archive");
+		-- Add a browser
+		addonForm.Browser = addonForm.Form:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Internet Archive", "Chromium");
 		
-		browser:Show();
+		-- Hide the text label
+		addonForm.Browser.TextVisible = false;
+		addonForm.Browser:CollapseTextPlaceholder();
 		
+		-- Since we didn't create a ribbon explicitly before creating our browser, it will have created one using the name we passed the CreateBrowser method.  
+		-- We can retrieve that one and add our buttons to it.
+		addonForm.RibbonPage = addonForm.Form:GetRibbonPage("Internet Archive");
+		
+		-- Create the search button
+		addonForm.RibbonPage:CreateButton("Search", GetClientImage("Search32"), "Search", "Internet Archive Search");
+		
+		-- After we add all of our buttons and form elements, we can show the form.
+		addonForm.Form:Show();
+
 		if autoSearch then
 			Search();
 		end
@@ -33,14 +51,44 @@ function Init()
 end
 
 function Search()
-        browser:RegisterPageHandler("formExists", "searchform","SearchFormLoaded", false);
-        browser:Navigate("http://archive.org");
+	addonForm.Browser:RegisterPageHandler("formExists", "searchform","SearchFormLoaded", false);
+	addonForm.Browser:Navigate("http://archive.org");	
 end
 
-function SearchFormLoaded()
-		if GetFieldValue("Transaction", "RequestType") == "Loan" then
-			browser:SetFormValue("searchform", "search", GetFieldValue("Transaction", "LoanTitle"));
-		end
-        browser:ClickObject("gobutton");
+function SearchFormLoaded()	
+	if GetFieldValue("Transaction", "RequestType") == "Loan" then
+		SearchInternetArchives(addonForm.Browser, "searchform", "search", GetFieldValue("Transaction", "LoanTitle"));
+	end	
 end
 
+function SearchInternetArchives(browser, formName, inputName, value)	
+	if browser then		
+		--Script to execute
+		local searchInternetArchives = [[
+			(function(formName, inputName, value) {
+				
+				let form = document.forms[formName];
+				if (!(form)) {
+					console.log('Unable to find the form');
+					return;
+				}
+				
+				let inputElement = form.elements[inputName];
+				if (!(inputElement)) {
+					console.log('Unable to find the input');
+					return;
+				}
+				inputElement.value = value;
+
+				//Internet Archive masks the form submit with a hidden element
+				//Instead try to find the button and click it
+				if (form.getElementsByTagName("button").length == 1) {
+					console.log('Only 1 to submit');
+					form.getElementsByTagName("button")[0].click();
+				}
+			})
+		]];
+				
+		browser:ExecuteScript(searchInternetArchives, { formName, inputName, value });
+	end
+end
