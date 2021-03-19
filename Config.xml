@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Internet Archive Search</Name>
+  <Author>Simmons College Library</Author>
+  <Version>1.1</Version>
+  <Active>true</Active>
+  <Description>Performs a search of internet archive for a loans' LoanTitle.</Description>
+  <Forms>
+    <Form>FormRequest</Form>
+  </Forms>
+  <Settings>
+    <Setting name="AutoSearch" value="true" type="boolean">
+      <Description>Defines whether the search should be automatically performed when the form opens.</Description>
+    </Setting>
+  </Settings>
+  <Files>
+    <File>InternetArchiveSearch.lua</File>
+  </Files>
+</Configuration>
