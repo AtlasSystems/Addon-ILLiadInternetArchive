@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Internet Archive Search</Name>
-  <Author>Simmons College Library</Author>
-  <Version>1.1</Version>
+  <Author>Atlas Systems and Simmons College Library</Author>
+  <Version>2.0.0</Version>
   <Active>true</Active>
   <Description>Performs a search of internet archive for a loans' LoanTitle.</Description>
   <Forms>
