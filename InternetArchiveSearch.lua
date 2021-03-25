@@ -10,6 +10,16 @@
 -- InternetArchiveSearch.lua does search of Internet Archive for the LoanTitle for loans.
 -- autoSearch (boolean) determines whether the search is performed automatically when a request is opened or not.
 
+----
+---- Initial setup to open a new process (default browser)
+-- Load the .NET System Assembly
+luanet.load_assembly("System");
+Types = {};
+--Store the Process type to instantiate a new process later
+Types["Process"] = luanet.import_type("System.Diagnostics.Process");
+----
+
+
 local autoSearch = GetSetting("AutoSearch");
 
 local interfaceMngr = nil;
@@ -35,8 +45,9 @@ function Init()
 		addonForm.RibbonPage = addonForm.Form:GetRibbonPage("Internet Archive");
 
 		-- Create the search button
-		addonForm.RibbonPage:CreateButton("Search", GetClientImage("Search32"), "Search", "Internet Archive Search");
-
+		addonForm.RibbonPage:CreateButton("Search", GetClientImage("Search32"), "Search", "Internet Archive");
+		addonForm.RibbonPage:CreateButton("Open New Browser", GetClientImage("Web32"), "OpenInDefaultBrowser", "Utility");
+	
 		-- After we add all of our buttons and form elements, we can show the form.
 		addonForm.Form:Show();
 
@@ -88,5 +99,18 @@ function SearchInternetArchives(browser, formName, inputName, value)
 		]];
 
 		browser:ExecuteScript(searchInternetArchives, { formName, inputName, value });
+	end
+end
+
+function OpenInDefaultBrowser()
+	local currentUrl = addonForm.Browser.Address;
+	
+	if (currentUrl and currentUrl ~= "")then
+		LogDebug("Opening Browser URL in default browser: " .. currentUrl);
+
+		local process = Types["Process"]();
+		process.StartInfo.FileName = currentUrl;
+		process.StartInfo.UseShellExecute = true;
+		process:Start();
 	end
 end
