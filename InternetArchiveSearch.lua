@@ -52,54 +52,32 @@ function Init()
 		addonForm.Form:Show();
 
 		if autoSearch then
+			LogDebug("AutoSearch is enabled.");
 			Search();
+		else
+			LogDebug("AutoSearch is disabled. Showing Internet Archive base page");
+			addonForm.Browser:Navigate("https://archive.org");
 		end
+	else
+		LogDebug("Internet Archive Search addon not displayed. Addon is only show for Loan requests.");
 	end
 end
 
 function Search()
-	addonForm.Browser:RegisterPageHandler("formExists", "searchform","SearchFormLoaded", false);
-	addonForm.Browser:Navigate("http://archive.org");
+	local searchUrl = "https://archive.org/search.php?query=" .. UrlEncode(GetFieldValue("Transaction", "LoanTitle"));
+	addonForm.Browser:Navigate(searchUrl);
 end
 
-function SearchFormLoaded()	
-	if GetFieldValue("Transaction", "RequestType") == "Loan" then
-		SearchInternetArchives(addonForm.Browser, "searchform", "search", GetFieldValue("Transaction", "LoanTitle"));
-	end	
-end
-
-function SearchInternetArchives(browser, formName, inputName, value)	
-	if browser then		
-		--Script to execute
-		local searchInternetArchives = [[
-			(function(formName, inputName, value) {
-				//Write to the client log. 
-				//Use ES6 Template Strings to concatenate - using back-ticks: https://developers.google.com/web/updates/2015/01/ES6-Template-Strings
-				atlasAddonAsync.executeAddonFunction("LogDebug", `Performing Internet Archives Search: ${value}` );
-
-				let form = document.forms[formName];
-				if (!(form)) {
-					atlasAddonAsync.executeAddonFunction("LogDebug", `Unable to find form: ${formName}` );
-					return;
-				}
-				
-				let inputElement = form.elements[inputName];
-				if (!(inputElement)) {
-					atlasAddonAsync.executeAddonFunction("LogDebug", `Unable to find form input: ${inputName}` );
-					return;
-				}
-				inputElement.value = value;
-
-				//Internet Archive masks form submit with a hidden element with name "submit"
-				//Instead, look for a the button and click it
-				if (form.getElementsByTagName("button").length == 1) {
-					form.getElementsByTagName("button")[0].click();
-				}
-			})
-		]];
-
-		browser:ExecuteScript(searchInternetArchives, { formName, inputName, value });
+function UrlEncode(s)
+	if (s) then
+		s = string.gsub(s, "\n", "\r\n")
+		s = string.gsub(s, "([^%w %-%_%.%~])",
+			function (c)
+				return string.format("%%%02X", string.byte(c))
+			end);
+		s = string.gsub(s, " ", "+")
 	end
+	return s
 end
 
 function OpenInDefaultBrowser()
