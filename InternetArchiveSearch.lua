@@ -34,7 +34,7 @@ function Init()
 		addonForm.Form = interfaceMngr:CreateForm("Internet Archive Search", "Internet Archive Search");
 
 		-- Add a browser
-		addonForm.Browser = addonForm.Form:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Internet Archive", "Chromium");
+		addonForm.Browser = addonForm.Form:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Internet Archive", "WebView2");
 
 		-- Hide the text label
 		addonForm.Browser.TextVisible = false;
