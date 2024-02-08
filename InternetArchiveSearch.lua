@@ -33,8 +33,12 @@ function Init()
 		-- Create a form
 		addonForm.Form = interfaceMngr:CreateForm("Internet Archive Search", "Internet Archive Search");
 
-		-- Add a browser
-		addonForm.Browser = addonForm.Form:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Internet Archive", "WebView2");
+		-- Ensures backwards compatibility with ILLiad 9.1.
+		if AddonInfo.Browsers and AddonInfo.Browsers.WebView2 then
+			addonForm.Browser = addonForm.Form:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Internet Archive", "WebView2");
+		else
+			addonForm.Browser = addonForm.Form:CreateBrowser("Internet Archive Search", "Internet Archive Search", "Internet Archive", "Chromium");
+		end
 
 		-- Hide the text label
 		addonForm.Browser.TextVisible = false;
